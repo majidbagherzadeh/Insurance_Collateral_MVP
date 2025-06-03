@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,7 +20,7 @@ public class Collateral {
     @PostMapping("/auth")
     @Operation(summary = "احراز هویت", description = "دریافت توکن احراز هویت")
     public ResponseEntity<AuthResponse> authenticate(
-            @RequestBody @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            @Valid @RequestBody @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "توکن ارسال شده توسط شرکت بیمه",
                     required = true,
                     content = @Content(schema = @Schema(implementation = TokenRequest.class),
@@ -30,7 +31,8 @@ public class Collateral {
 
     @PostMapping("/max-amount-inquiry")
     @Operation(summary = "استعلام حداکثر مبلغ قابل وثیقه سپاری")
-    public ResponseEntity<MaxAmountResponse> getMaxAmount(@RequestBody @io.swagger.v3.oas.annotations.parameters.RequestBody(
+    public ResponseEntity<MaxAmountResponse> getMaxAmount(
+            @Valid @RequestBody @io.swagger.v3.oas.annotations.parameters.RequestBody(
             content = @Content(schema = @Schema(implementation = MaxAmountRequest.class),
                     examples = @ExampleObject(value = "{\n  \"CIINumber\": \"80003838503\",\n  \"AssigneeCompanyCode\": \"10101541927\",\n  \"NationalCode\": \"0492004986\",\n  \"Period\": 3\n}"))) MaxAmountRequest request) {
         return ResponseEntity.ok(new MaxAmountResponse());
@@ -38,7 +40,7 @@ public class Collateral {
 
     @PostMapping("/requests")
     @Operation(summary = "درخواست وثیقه سپاری")
-    public ResponseEntity<CollateralRequestResponse> requestCollateral(@RequestBody MaxAmountRequest request) {
+    public ResponseEntity<CollateralRequestResponse> requestCollateral(@Valid @RequestBody MaxAmountRequest request) {
         return ResponseEntity.ok(new CollateralRequestResponse());
     }
 
@@ -46,7 +48,7 @@ public class Collateral {
     @Operation(summary = "تایید وثیقه سپاری")
     public ResponseEntity<CollateralRequestResponse> confirmCollateral(
             @PathVariable int collateralId,
-            @RequestBody ConfirmAmountRequest request) {
+            @Valid @RequestBody ConfirmAmountRequest request) {
         return ResponseEntity.ok(new CollateralRequestResponse());
     }
 
@@ -60,7 +62,7 @@ public class Collateral {
     @Operation(summary = "اعلام برداشت از اندوخته")
     public ResponseEntity<ReserveWithdrawResponse> withdrawReserve(
             @PathVariable int collateralId,
-            @RequestBody ConfirmAmountRequest request) {
+            @Valid @RequestBody ConfirmAmountRequest request) {
         return ResponseEntity.ok(new ReserveWithdrawResponse());
     }
 
@@ -68,7 +70,7 @@ public class Collateral {
     @Operation(summary = "آزادسازی وثیقه")
     public ResponseEntity<ReserveWithdrawResponse> releaseCollateral(
             @PathVariable int collateralId,
-            @RequestBody ConfirmAmountRequest request) {
+            @Valid @RequestBody ConfirmAmountRequest request) {
         return ResponseEntity.ok(new ReserveWithdrawResponse());
     }
 
