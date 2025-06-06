@@ -9,26 +9,26 @@ import java.math.BigDecimal;
 @Schema(description = "پاسخ استعلام یا ثبت وثیقه شامل مشخصات وثیقه")
 public class MaxAmountResponse {
     @Schema(description = "کد یکتای بیمه‌نامه", example = "80003838503")
-    private String CIINumber;
+    private String cIINumber;
 
     @Schema(description = "کد ملی بیمه‌گذار", example = "0492004986")
-    private String NationalCode;
+    private String nationalCode;
 
     @Schema(description = "مدت زمان وثیقه (ماه)", example = "3")
-    private short Period;
+    private short period;
 
     @Schema(description = "کد رهگیری ثبت وثیقه", example = "120")
-    private int Id;
+    private int id;
 
     @Schema(description = "حداکثر مبلغ قابل وثیقه سپاری", example = "43716970.00")
-    private BigDecimal MaxAmount;
+    private BigDecimal maxAmount;
 
     @Schema(description = "مبلغ نهایی وثیقه بر اساس درخواست", example = "10000000")
-    private BigDecimal Amount;
+    private BigDecimal amount;
 
     @Schema(description = "شناسه ملی شرکت وثیقه‌گیر", example = "10101541927")
-    private String AssigneeCompanyCode;
+    private String assigneeCompanyCode;
 
     @Schema(description = "کد رایانه‌ای وثیقه‌گیر", example = "6985014")
-    private int AssigneeId;
+    private int assigneeId;
 }

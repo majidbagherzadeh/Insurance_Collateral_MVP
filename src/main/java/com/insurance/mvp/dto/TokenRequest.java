@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
-@Schema(description = "درخواست دریافت توکن احراز هویت")
+@Schema(description = "درخواست دریافت توکن احراز هویت", example = "{\n  \"token\": \"eyJhbGciOi...\"\n}")
 public class TokenRequest {
     @Schema(description = "توکن ارسال‌شده توسط شرکت بیمه برای احراز هویت", example = "eyJhbGciOi...")
     @NotBlank

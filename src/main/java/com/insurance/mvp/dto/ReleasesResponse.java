@@ -6,8 +6,8 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 @Data
-@Schema(description = "پاسخ عملیات برداشت از اندوخته")
-public class ReserveWithdrawResponse {
+@Schema(description = "پاسخ عملیات آزادسازی وثیقه")
+public class ReleasesResponse {
     @Schema(description = "کد رایانه", example = "52")
     private int id;
 
@@ -16,9 +16,6 @@ public class ReserveWithdrawResponse {
 
     @Schema(description = "مبلغ مورد تایید", example = "3005000.00")
     private BigDecimal amount;
-
-    @Schema(description = "کد رایانه حواله مرتبط (در صورت وجود)", example = "18")
-    private Integer draftId;
 
     @Schema(description = "کد رایانه وثیقه", example = "10")
     private int collateralId;

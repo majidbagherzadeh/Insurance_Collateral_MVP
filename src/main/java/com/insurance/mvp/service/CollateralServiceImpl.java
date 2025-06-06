@@ -22,7 +22,7 @@ public class CollateralServiceImpl implements CollateralService {
     }
 
     @Override
-    public CollateralRequestResponse confirmCollateral(int id, ConfirmAmountRequest request) {
+    public CollateralRequestResponse confirmCollateral(int id, AmountRequest request) {
         return new CollateralRequestResponse();
     }
 
@@ -32,12 +32,12 @@ public class CollateralServiceImpl implements CollateralService {
     }
 
     @Override
-    public ReserveWithdrawResponse withdrawReserve(int id, ConfirmAmountRequest request) {
+    public ReserveWithdrawResponse withdrawReserve(int id, AmountRequest request) {
         return new ReserveWithdrawResponse();
     }
 
     @Override
-    public ReserveWithdrawResponse releaseCollateral(int id, ConfirmAmountRequest request) {
+    public ReserveWithdrawResponse releaseCollateral(int id, AmountRequest request) {
         return new ReserveWithdrawResponse();
     }
 
