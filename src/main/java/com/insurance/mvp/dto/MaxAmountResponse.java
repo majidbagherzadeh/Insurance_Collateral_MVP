@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 @Schema(description = "پاسخ استعلام یا ثبت وثیقه شامل مشخصات وثیقه")
 public class MaxAmountResponse {
     @Schema(description = "کد یکتای بیمه‌نامه", example = "80003838503")
-    private String cIINumber;
+    private String ciiNumber;
 
     @Schema(description = "کد ملی بیمه‌گذار", example = "0492004986")
     private String nationalCode;

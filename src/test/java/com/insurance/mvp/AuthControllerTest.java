@@ -1,7 +1,7 @@
 package com.insurance.mvp;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.insurance.mvp.controllers.Collateral;
+import com.insurance.mvp.controller.CollateralController;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -14,7 +14,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @AutoConfigureMockMvc
-@WebMvcTest(Collateral.class)
+@WebMvcTest(CollateralController.class)
 class AuthControllerTest {
 
     @Autowired

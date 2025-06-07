@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
-@Schema(description = "درخواست استعلام حداکثر مبلغ وثیقه یا ثبت وثیقه جدید", example = "{\n  \"CIINumber\": \"80003838503\",\n  \"AssigneeCompanyCode\": \"10101541927\",\n  \"NationalCode\": \"0492004986\",\n  \"Period\": 3\n}")
+@Schema(description = "درخواست استعلام حداکثر مبلغ وثیقه یا ثبت وثیقه جدید", example = "{\n  \"ciiNumber\": \"80003838503\",\n  \"assigneeCompanyCode\": \"10101541927\",\n  \"nationalCode\": \"0492004986\",\n  \"period\": 18\n}")
 public class MaxAmountRequest {
     @Schema(description = "کد ملی", example = "0492004986")
     @NotBlank(message = "کد ملی نباید خالی باشد")
@@ -15,7 +15,7 @@ public class MaxAmountRequest {
 
     @Schema(description = "کد یکتای بیمه‌نامه", example = "80003838503")
     @NotBlank(message = "کد یکتای بیمه‌نامه الزامی است")
-    private String cIINumber;
+    private String ciiNumber;
 
     @Schema(description = "مدت وثیقه (به ماه)", example = "18")
     @NotNull(message = "مدت وثیقه الزامی است")

@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 @Data
 @Schema(description = "پاسخ کامل عملیات وثیقه‌گذاری شامل تاریخ‌ها و وضعیت‌ها")
-public class CollateralRequestResponse {
+public class CollateralResponse {
     @Schema(description = "کد یکتای بیمه‌نامه", example = "80003838503")
     private String cIINumber;
 
