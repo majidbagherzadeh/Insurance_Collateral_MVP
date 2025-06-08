@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 @Schema(description = "پاسخ عملیات آزادسازی وثیقه")
 public class ReleasesResponse {
     @Schema(description = "کد رایانه", example = "52")
-    private int id;
+    private long id;
 
     @Schema(description = "مبلغ باقیمانده وثیقه", example = "7890000.00")
     private BigDecimal remainedAmount;
@@ -18,5 +18,5 @@ public class ReleasesResponse {
     private BigDecimal amount;
 
     @Schema(description = "کد رایانه وثیقه", example = "10")
-    private int collateralId;
+    private long collateralId;
 }

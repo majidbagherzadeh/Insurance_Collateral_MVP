@@ -3,18 +3,17 @@ package com.insurance.mvp.service;
 import com.insurance.mvp.dto.*;
 import com.insurance.mvp.entity.MockInsuranceCollateral;
 import com.insurance.mvp.entity.CollateralEntity;
+import com.insurance.mvp.entity.ReleaseCollateralEntity;
 import com.insurance.mvp.repository.InsuranceCollateralRepository;
 import com.insurance.mvp.repository.CollateralRepository;
 import com.insurance.mvp.util.DateConverterUtil;
 import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class CollateralServiceImpl implements CollateralService {
@@ -67,7 +66,6 @@ public class CollateralServiceImpl implements CollateralService {
         MaxAmountResponse maxAmountResponse = getMaxAmount(request);
 
         CollateralEntity collateralEntity = modelMapper.map(maxAmountResponse, CollateralEntity.class);
-        collateralEntity.setRemainedAmount(maxAmountResponse.getAmount());
         collateralEntity.setCreationTime(DateConverterUtil.toLocalDateTime(new Date()));
 
         collateralEntity = collateralRepository.save(collateralEntity);
@@ -83,9 +81,9 @@ public class CollateralServiceImpl implements CollateralService {
         else {
             CollateralEntity collateralEntity = optionalCollateral.get();
 
-            checkCanceled(collateralEntity);
-            checkPreConfirm(collateralEntity);
-            checkMaxAmount(amountRequest, collateralEntity);
+            validNotCanceled(collateralEntity);
+            validConfirmed(collateralEntity);
+            validMaxAmounts(collateralEntity, amountRequest.getAmount());
 
             collateralEntity.setAmount(amountRequest.getAmount());
 
@@ -114,7 +112,7 @@ public class CollateralServiceImpl implements CollateralService {
         else {
             CollateralEntity collateralEntity = optionalCollateral.get();
 
-            checkNotActive(collateralEntity);
+            validActive(collateralEntity);
 
             collateralEntity.setCancellationDate(DateConverterUtil.toLocalDateTime(new Date()));
             collateralEntity.setCancellationTime(DateConverterUtil.toLocalDateTime(new Date()));
@@ -125,13 +123,55 @@ public class CollateralServiceImpl implements CollateralService {
     }
 
     @Override
+    @Transactional
     public ReserveWithdrawResponse withdrawReserve(long collateralId, AmountRequest request) {
-        return new ReserveWithdrawResponse();
+        Optional<CollateralEntity> optionalCollateral = collateralRepository.findById(collateralId);
+
+        if (optionalCollateral.isEmpty()) throw new RuntimeException("وثیقه پیدا نشد");
+        else {
+            CollateralEntity collateralEntity = optionalCollateral.get();
+
+            validCancelled(collateralEntity);
+            validWithdrawReverse(collateralEntity);
+
+            collateralEntity.setWithdrawReserve(true);
+            collateralEntity = collateralRepository.save(collateralEntity);
+
+            ReserveWithdrawResponse reserveWithdrawResponse = modelMapper.map(collateralEntity, ReserveWithdrawResponse.class);
+            reserveWithdrawResponse.setCollateralId(collateralId);
+            return reserveWithdrawResponse;
+        }
     }
 
     @Override
     public ReserveWithdrawResponse releaseCollateral(long collateralId, AmountRequest request) {
-        return new ReserveWithdrawResponse();
+        Optional<CollateralEntity> optionalCollateral = collateralRepository.findById(collateralId);
+
+        if (optionalCollateral.isEmpty()) throw new RuntimeException("وثیقه پیدا نشد");
+        else {
+            CollateralEntity collateralEntity = optionalCollateral.get();
+
+            validActive(collateralEntity);
+            validRemainAmount(collateralEntity, request.getAmount());
+
+            ReleaseCollateralEntity releaseCollateralEntity = new ReleaseCollateralEntity();
+            releaseCollateralEntity.setAmount(request.getAmount());
+            releaseCollateralEntity.setCollateralEntity(collateralEntity);
+
+            List<ReleaseCollateralEntity> withdrawReserve = collateralEntity.getReleaseCollaterals();
+            if (withdrawReserve == null)
+                collateralEntity.setReleaseCollaterals(Collections.singletonList(releaseCollateralEntity));
+            else withdrawReserve.add(releaseCollateralEntity);
+
+            collateralEntity = collateralRepository.save(collateralEntity);
+
+            ReserveWithdrawResponse reserveWithdrawResponse = new ReserveWithdrawResponse();
+            reserveWithdrawResponse.setAmount(request.getAmount());
+            reserveWithdrawResponse.setRemainedAmount(collateralEntity.calculateRemainedAmount());
+            reserveWithdrawResponse.setCollateralId(collateralEntity.getId());
+
+            return modelMapper.map(collateralEntity, ReserveWithdrawResponse.class);
+        }
     }
 
     @Override
@@ -144,25 +184,38 @@ public class CollateralServiceImpl implements CollateralService {
 
         List<CollateralEntity> collateralEntities = collateralRepository.findAllByNationalCodeAndCiiNumberAndAssigneeCompanyCode(nationalCode, ciiNumber, assigneeCompanyCode);
         for (CollateralEntity collateralEntity : collateralEntities)
-            if (collateralEntity.nowActive()) sum = sum.add(collateralEntity.getAmount());
+            if (collateralEntity.nowActive()) sum = sum.add(collateralEntity.calculateRemainedAmount());
         return sum;
     }
 
-    private void checkMaxAmount(AmountRequest amountRequest, CollateralEntity collateralEntity) {
-        if (amountRequest.getAmount().add(sumOfActiveCollaterals(collateralEntity.getNationalCode(), collateralEntity.getCiiNumber(), collateralEntity.getAssigneeCompanyCode())).compareTo(collateralEntity.getMaxAmount()) > 0)
+    private void validMaxAmounts(CollateralEntity collateralEntity, BigDecimal amount) {
+        if (amount.add(sumOfActiveCollaterals(collateralEntity.getNationalCode(), collateralEntity.getCiiNumber(), collateralEntity.getAssigneeCompanyCode())).compareTo(collateralEntity.getMaxAmount()) > 0)
             throw new RuntimeException("مبلغ مجموع وثایق روی این بیمه نامه بیشتر از حداکثر مبلغ مجاز است");
     }
 
-    private void checkPreConfirm(CollateralEntity collateralEntity) {
+    private void validConfirmed(CollateralEntity collateralEntity) {
         if (collateralEntity.getConfirmationDate() != null || collateralEntity.getConfirmationTime() != null)
             throw new RuntimeException("وثیقه قبلا تایید شده است");
     }
 
-    private void checkCanceled(CollateralEntity collateralEntity) {
+    private void validNotCanceled(CollateralEntity collateralEntity) {
         if (collateralEntity.canceled()) throw new RuntimeException("وثیقه قبلا کنسل شده است");
     }
 
-    private void checkNotActive(CollateralEntity collateralEntity) {
+    private void validActive(CollateralEntity collateralEntity) {
         if (!collateralEntity.nowActive()) throw new RuntimeException("وثیقه فعال نیست");
+    }
+
+    private void validCancelled(CollateralEntity collateralEntity) {
+        if (!collateralEntity.canceled()) throw new RuntimeException("وثیقه فعال است، قبل از آن باید وثیقه را ابطال کنید");
+    }
+
+    private void validRemainAmount(CollateralEntity collateralEntity, BigDecimal amount) {
+        if (collateralEntity.calculateRemainedAmount().subtract(amount).compareTo(BigDecimal.ZERO) < 0)
+            throw new RuntimeException("مبلغ برداشت از باقیمانده اندوخته بیشتر است");
+    }
+
+    private void validWithdrawReverse(CollateralEntity collateralEntity) {
+        if (collateralEntity.isWithdrawReserve()) throw new RuntimeException("وثیقه پیش از این برداشت از اندوخته شده است");
     }
 }

@@ -7,6 +7,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "collateral")
@@ -30,9 +31,6 @@ public class CollateralEntity {
 
     @Column
     private BigDecimal amount;
-
-    @Column
-    private BigDecimal remainedAmount;
 
     @Column
     private LocalDateTime beginDate;
@@ -61,12 +59,27 @@ public class CollateralEntity {
     @Column
     private int assigneeId;
 
+    @Column
+    private boolean withdrawReserve;
+
+    @Column
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private List<ReleaseCollateralEntity> releaseCollaterals;
+
     public boolean nowActive() {
-        return this.getConfirmationDate() != null && this.getCancellationDate() == null &&
+        return this.getConfirmationDate() != null && this.getCancellationDate() == null && !this.isWithdrawReserve() &&
                 (this.getEndDate() == null || this.getEndDate().isAfter(DateConverterUtil.toLocalDateTime(new Date())));
     }
 
     public boolean canceled() {
         return this.getCancellationDate() != null;
+    }
+
+    public BigDecimal calculateRemainedAmount() {
+        BigDecimal withdrawAmount = BigDecimal.ZERO;
+        for (ReleaseCollateralEntity releaseCollateralEntity : releaseCollaterals)
+            withdrawAmount = withdrawAmount.add(releaseCollateralEntity.getAmount());
+
+        return amount.subtract(withdrawAmount);
     }
 }

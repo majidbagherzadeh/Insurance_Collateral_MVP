@@ -22,6 +22,7 @@ public class MockInsuranceCollateral {
 
     @Column
     private int assigneeId;
+
     @Column
     private BigDecimal maxAmount;
 }

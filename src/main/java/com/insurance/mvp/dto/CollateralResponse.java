@@ -19,7 +19,7 @@ public class CollateralResponse {
     private short period;
 
     @Schema(description = "کد رهگیری", example = "120")
-    private int id;
+    private long id;
 
     @Schema(description = "حداکثر مبلغ قابل وثیقه سپاری", example = "43716970.00")
     private BigDecimal maxAmount;
