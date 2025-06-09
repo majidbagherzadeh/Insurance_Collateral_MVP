@@ -1,12 +1,10 @@
 package com.insurance.mvp.entity;
 
-import com.insurance.mvp.util.DateConverterUtil;
 import jakarta.persistence.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -62,13 +60,12 @@ public class CollateralEntity {
     @Column
     private boolean withdrawReserve;
 
-    @Column
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "collateralEntity", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<ReleaseCollateralEntity> releaseCollaterals;
 
     public boolean nowActive() {
-        return this.getConfirmationDate() != null && this.getCancellationDate() == null && !this.isWithdrawReserve() &&
-                (this.getEndDate() == null || this.getEndDate().isAfter(DateConverterUtil.toLocalDateTime(new Date())));
+        return this.getConfirmationDate() != null && this.getCancellationDate() == null && !this.isWithdrawReserve();
+//            && (this.getEndDate() == null || this.getEndDate().isAfter(DateConverterUtil.toLocalDateTime(new Date())));
     }
 
     public boolean canceled() {

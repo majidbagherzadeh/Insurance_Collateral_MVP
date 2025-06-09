@@ -34,39 +34,35 @@ public class CollateralServiceImpl implements CollateralService {
     }
 
     @Override
-    public MaxAmountResponse getMaxAmount(@Valid MaxAmountRequest request) {
-        Optional<MockInsuranceCollateral> insuranceCollateral = insuranceCollateralRepository
-                .findByNationalCodeAndCiiNumberAndAssigneeCompanyCode(
-                        request.getNationalCode(), request.getCiiNumber(), request.getAssigneeCompanyCode()
-                );
+    public MaxAmountResponse getMaxAmount(@Valid MaxAmountRequest maxAmountRequest) {
+        MockInsuranceCollateral insuranceCollateral = findInsuranceCollateral(maxAmountRequest);
 
-        if (insuranceCollateral.isPresent()) {
-            MaxAmountResponse maxAmountResponse = modelMapper.map(insuranceCollateral.get(), MaxAmountResponse.class);
-            maxAmountResponse.setPeriod(request.getPeriod());
+        MaxAmountResponse maxAmountResponse = modelMapper.map(insuranceCollateral, MaxAmountResponse.class);
+        maxAmountResponse.setPeriod(maxAmountRequest.getPeriod());
+        maxAmountResponse.setAmount(null);
 
-            List<CollateralEntity> collateralEntities = collateralRepository.findAllByNationalCodeAndCiiNumberAndAssigneeCompanyCode(
-                    request.getNationalCode(), request.getCiiNumber(), request.getAssigneeCompanyCode()
-            );
+        List<CollateralEntity> collateralEntities = collateralRepository.findAllByNationalCodeAndCiiNumberAndAssigneeCompanyCode(
+                maxAmountRequest.getNationalCode(), maxAmountRequest.getCiiNumber(), maxAmountRequest.getAssigneeCompanyCode()
+        );
 
-            if (collateralEntities.isEmpty()) {
-                CollateralEntity collateralEntity = modelMapper.map(insuranceCollateral.get(), CollateralEntity.class);
-                collateralRepository.save(collateralEntity);
-            } else {
-                for (CollateralEntity collateralEntity : collateralEntities)
-                    collateralEntity.setMaxAmount(maxAmountResponse.getMaxAmount());
-                collateralRepository.saveAll(collateralEntities);
-            }
+        if (collateralEntities != null && !collateralEntities.isEmpty()) {
+            for (CollateralEntity collateralEntity : collateralEntities)
+                collateralEntity.setMaxAmount(maxAmountResponse.getMaxAmount());
 
-            return maxAmountResponse;
-        } else throw new RuntimeException("اطلاعات برای این وثیقه پیدا نشد");
+            collateralRepository.saveAll(collateralEntities);
+        }
+
+        return maxAmountResponse;
     }
 
     @Override
-    public CollateralResponse requestCollateral(MaxAmountRequest request) {
-        MaxAmountResponse maxAmountResponse = getMaxAmount(request);
+    public CollateralResponse requestCollateral(MaxAmountRequest maxAmountRequest) {
+        MockInsuranceCollateral insuranceCollateral = findInsuranceCollateral(maxAmountRequest);
 
-        CollateralEntity collateralEntity = modelMapper.map(maxAmountResponse, CollateralEntity.class);
+        CollateralEntity collateralEntity = modelMapper.map(insuranceCollateral, CollateralEntity.class);
+        collateralEntity.setAmount(null);
         collateralEntity.setCreationTime(DateConverterUtil.toLocalDateTime(new Date()));
+        collateralEntity.setPeriod(maxAmountRequest.getPeriod());
 
         collateralEntity = collateralRepository.save(collateralEntity);
 
@@ -124,7 +120,7 @@ public class CollateralServiceImpl implements CollateralService {
 
     @Override
     @Transactional
-    public ReserveWithdrawResponse withdrawReserve(long collateralId, AmountRequest request) {
+    public ReserveWithdrawResponse withdrawReserve(long collateralId, AmountRequest amountRequest) {
         Optional<CollateralEntity> optionalCollateral = collateralRepository.findById(collateralId);
 
         if (optionalCollateral.isEmpty()) throw new RuntimeException("وثیقه پیدا نشد");
@@ -144,7 +140,7 @@ public class CollateralServiceImpl implements CollateralService {
     }
 
     @Override
-    public ReserveWithdrawResponse releaseCollateral(long collateralId, AmountRequest request) {
+    public ReserveWithdrawResponse releaseCollateral(long collateralId, AmountRequest amountRequest) {
         Optional<CollateralEntity> optionalCollateral = collateralRepository.findById(collateralId);
 
         if (optionalCollateral.isEmpty()) throw new RuntimeException("وثیقه پیدا نشد");
@@ -152,10 +148,10 @@ public class CollateralServiceImpl implements CollateralService {
             CollateralEntity collateralEntity = optionalCollateral.get();
 
             validActive(collateralEntity);
-            validRemainAmount(collateralEntity, request.getAmount());
+            validRemainAmount(collateralEntity, amountRequest.getAmount());
 
             ReleaseCollateralEntity releaseCollateralEntity = new ReleaseCollateralEntity();
-            releaseCollateralEntity.setAmount(request.getAmount());
+            releaseCollateralEntity.setAmount(amountRequest.getAmount());
             releaseCollateralEntity.setCollateralEntity(collateralEntity);
 
             List<ReleaseCollateralEntity> withdrawReserve = collateralEntity.getReleaseCollaterals();
@@ -165,18 +161,28 @@ public class CollateralServiceImpl implements CollateralService {
 
             collateralEntity = collateralRepository.save(collateralEntity);
 
-            ReserveWithdrawResponse reserveWithdrawResponse = new ReserveWithdrawResponse();
-            reserveWithdrawResponse.setAmount(request.getAmount());
+            ReserveWithdrawResponse reserveWithdrawResponse = modelMapper.map(collateralEntity, ReserveWithdrawResponse.class);
+            reserveWithdrawResponse.setAmount(amountRequest.getAmount());
             reserveWithdrawResponse.setRemainedAmount(collateralEntity.calculateRemainedAmount());
             reserveWithdrawResponse.setCollateralId(collateralEntity.getId());
 
-            return modelMapper.map(collateralEntity, ReserveWithdrawResponse.class);
+            return reserveWithdrawResponse;
         }
     }
 
     @Override
     public List<PaymentStatusResponse> getDraftStatus(int draftId) {
         return List.of();
+    }
+
+    private MockInsuranceCollateral findInsuranceCollateral(MaxAmountRequest maxAmountRequest) {
+        Optional<MockInsuranceCollateral> insuranceCollateral = insuranceCollateralRepository
+                .findByNationalCodeAndCiiNumberAndAssigneeCompanyCode(
+                        maxAmountRequest.getNationalCode(), maxAmountRequest.getCiiNumber(), maxAmountRequest.getAssigneeCompanyCode()
+                );
+
+        if (insuranceCollateral.isEmpty()) throw new RuntimeException("اطلاعات برای این وثیقه پیدا نشد");
+        else return insuranceCollateral.get();
     }
 
     private BigDecimal sumOfActiveCollaterals(String nationalCode, String ciiNumber, String assigneeCompanyCode) {
@@ -189,7 +195,8 @@ public class CollateralServiceImpl implements CollateralService {
     }
 
     private void validMaxAmounts(CollateralEntity collateralEntity, BigDecimal amount) {
-        if (amount.add(sumOfActiveCollaterals(collateralEntity.getNationalCode(), collateralEntity.getCiiNumber(), collateralEntity.getAssigneeCompanyCode())).compareTo(collateralEntity.getMaxAmount()) > 0)
+        BigDecimal sumOfActiveCollaterals = sumOfActiveCollaterals(collateralEntity.getNationalCode(), collateralEntity.getCiiNumber(), collateralEntity.getAssigneeCompanyCode());
+        if (amount.add(sumOfActiveCollaterals).compareTo(collateralEntity.getMaxAmount()) > 0)
             throw new RuntimeException("مبلغ مجموع وثایق روی این بیمه نامه بیشتر از حداکثر مبلغ مجاز است");
     }
 

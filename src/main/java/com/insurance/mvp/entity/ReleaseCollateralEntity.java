@@ -16,7 +16,7 @@ public class ReleaseCollateralEntity {
     @Column
     private BigDecimal amount;
 
-    @JoinColumn
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "collateral_id", nullable = false)
     private CollateralEntity collateralEntity;
 }
