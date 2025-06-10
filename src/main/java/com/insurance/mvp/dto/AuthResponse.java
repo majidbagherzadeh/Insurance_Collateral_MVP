@@ -5,9 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
-@Schema(description = "پاسخ احراز هویت شامل توکن دسترسی")
+@Schema(description = "collaterals.authResponse.description")
 @AllArgsConstructor
 public class AuthResponse {
-    @Schema(description = "توکن دسترسی تولید شده توسط سیستم", example = "eyJhbGciOi...")
+    @Schema(description = "collaterals.authResponse.accessToken.description", example = "eyJhbGciOi...")
     private String accessToken;
 }

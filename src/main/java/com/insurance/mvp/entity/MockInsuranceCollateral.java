@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
 @Table
@@ -11,7 +12,7 @@ import java.math.BigDecimal;
 public class MockInsuranceCollateral {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private long id;
 
     @Column
     private String nationalCode;
@@ -19,10 +20,10 @@ public class MockInsuranceCollateral {
     private String ciiNumber;
     @Column
     private String assigneeCompanyCode;
-
     @Column
     private int assigneeId;
-
     @Column
     private BigDecimal maxAmount;
+    @Column
+    private LocalDateTime endDate;
 }

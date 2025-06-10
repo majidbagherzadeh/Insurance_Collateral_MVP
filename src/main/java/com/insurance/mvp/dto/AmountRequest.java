@@ -8,10 +8,10 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 @Data
-@Schema(description = "درخواست تایید، آزادسازی یا برداشت مبلغ وثیقه")
+@Schema(description = "collaterals.amountRequest.description")
 public class AmountRequest {
-    @Schema(description = "مبلغ برای عملیات", example = "10000000")
-    @NotNull(message = "مبلغ الزامی است")
-    @Min(value = 1, message = "مبلغ باید بزرگتر از 0 باشد")
+    @Schema(description = "collaterals.amountRequest.amount.description", example = "10000000")
+    @NotNull(message = "collaterals.amountRequest.amount.notNull.message")
+    @Min(value = 1, message = "collaterals.amountRequest.amount.min.message")
     private BigDecimal amount;
 }

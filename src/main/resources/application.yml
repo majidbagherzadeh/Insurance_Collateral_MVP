@@ -13,3 +13,6 @@ spring:
       ddl-auto: update
     show-sql: true
     database-platform: org.hibernate.dialect.H2Dialect
+  messages:
+    basename: message
+    encoding: UTF-8

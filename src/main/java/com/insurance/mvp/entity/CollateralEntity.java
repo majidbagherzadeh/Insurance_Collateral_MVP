@@ -13,7 +13,7 @@ import java.util.List;
 public class CollateralEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private long id;
 
     @Column
     private String ciiNumber;
@@ -65,7 +65,6 @@ public class CollateralEntity {
 
     public boolean nowActive() {
         return this.getConfirmationDate() != null && this.getCancellationDate() == null && !this.isWithdrawReserve();
-//            && (this.getEndDate() == null || this.getEndDate().isAfter(DateConverterUtil.toLocalDateTime(new Date())));
     }
 
     public boolean canceled() {

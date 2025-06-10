@@ -46,8 +46,10 @@ public class CollateralServiceImpl implements CollateralService {
         );
 
         if (collateralEntities != null && !collateralEntities.isEmpty()) {
-            for (CollateralEntity collateralEntity : collateralEntities)
+            for (CollateralEntity collateralEntity : collateralEntities) {
                 collateralEntity.setMaxAmount(maxAmountResponse.getMaxAmount());
+                collateralEntity.setEndDate(insuranceCollateral.getEndDate());
+            }
 
             collateralRepository.saveAll(collateralEntities);
         }
@@ -63,6 +65,7 @@ public class CollateralServiceImpl implements CollateralService {
         collateralEntity.setAmount(null);
         collateralEntity.setCreationTime(DateConverterUtil.toLocalDateTime(new Date()));
         collateralEntity.setPeriod(maxAmountRequest.getPeriod());
+        collateralEntity.setId(0);
 
         collateralEntity = collateralRepository.save(collateralEntity);
 

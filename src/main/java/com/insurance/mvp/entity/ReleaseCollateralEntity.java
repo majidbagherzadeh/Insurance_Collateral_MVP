@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 public class ReleaseCollateralEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private long id;
 
     @Column
     private BigDecimal amount;

@@ -12,7 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/collaterals")
-@Tag(name = "Collateral Services", description = "سرویس‌های وثیقه سپاری بیمه‌نامه‌های زندگی")
+@Tag(name = "collaterals.services.name")
 public class CollateralController {
     private final CollateralService collateralService;
 
@@ -21,55 +21,55 @@ public class CollateralController {
     }
 
     @PostMapping("/auth")
-    @Operation(summary = "احراز هویت", description = "دریافت توکن احراز هویت")
+    @Operation(summary = "collaterals.auth.summary", description = "collaterals.auth.description")
     public ResponseEntity<AuthResponse> authenticate(
             @Valid @RequestBody TokenRequest request) {
         return ResponseEntity.ok(new AuthResponse("dummy-token"));
     }
 
     @PostMapping("/max-amount-inquiry")
-    @Operation(summary = "استعلام حداکثر مبلغ قابل وثیقه سپاری")
+    @Operation(summary = "collaterals.max-amount-inquiry.summary")
     public ResponseEntity<MaxAmountResponse> getMaxAmount(
             @Valid @RequestBody MaxAmountRequest request) {
         return ResponseEntity.ok(collateralService.getMaxAmount(request));
     }
 
     @PostMapping("/requests")
-    @Operation(summary = "درخواست وثیقه سپاری")
+    @Operation(summary = "collaterals.requests.summary")
     public ResponseEntity<CollateralResponse> requestCollateral(@Valid @RequestBody MaxAmountRequest request) {
         return ResponseEntity.ok(collateralService.requestCollateral(request));
     }
 
     @PostMapping("/{collateralId}/confirmation")
-    @Operation(summary = "تایید وثیقه سپاری")
+    @Operation(summary = "collaterals.confirmation.summary")
     public ResponseEntity<CollateralResponse> confirmCollateral(
             @PathVariable int collateralId, @Valid @RequestBody AmountRequest request) {
         return ResponseEntity.ok(collateralService.confirmCollateral(collateralId, request));
     }
 
     @PostMapping("/{collateralId}/cancellation")
-    @Operation(summary = "ابطال وثیقه")
+    @Operation(summary = "collaterals.cancellation.summary")
     public ResponseEntity<CollateralResponse> cancelCollateral(
             @PathVariable int collateralId) {
         return ResponseEntity.ok(collateralService.cancelCollateral(collateralId));
     }
 
     @PostMapping("/{collateralId}/reserve-withdrawals")
-    @Operation(summary = "اعلام برداشت از اندوخته")
+    @Operation(summary = "collaterals.reserve-withdrawals.summary")
     public ResponseEntity<ReserveWithdrawResponse> withdrawReserve(
             @PathVariable int collateralId, @Valid @RequestBody AmountRequest request) {
         return ResponseEntity.ok(collateralService.withdrawReserve(collateralId, request));
     }
 
     @PostMapping("/{collateralId}/releases")
-    @Operation(summary = "آزادسازی وثیقه")
+    @Operation(summary = "collaterals.releases.summary")
     public ResponseEntity<ReserveWithdrawResponse> releaseCollateral(
             @PathVariable int collateralId, @Valid @RequestBody AmountRequest request) {
         return ResponseEntity.ok(collateralService.releaseCollateral(collateralId, request));
     }
 
     @GetMapping("/draft/inquiry")
-    @Operation(summary = "اعلام وضعیت مالی حواله")
+    @Operation(summary = "collaterals.inquiry.summary")
     public ResponseEntity<List<PaymentStatusResponse>> getDraftStatus(@RequestParam int draftId) {
         return ResponseEntity.ok(collateralService.getDraftStatus(draftId));
     }
