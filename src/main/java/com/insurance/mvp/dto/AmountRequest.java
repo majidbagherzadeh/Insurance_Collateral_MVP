@@ -3,11 +3,13 @@ package com.insurance.mvp.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.math.BigDecimal;
 
 @Data
+@AllArgsConstructor
 @Schema(description = "collaterals.amountRequest.description")
 public class AmountRequest {
     @Schema(description = "collaterals.amountRequest.amount.description", example = "10000000")

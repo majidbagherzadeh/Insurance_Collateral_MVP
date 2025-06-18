@@ -18,7 +18,7 @@ public class MaxAmountResponse {
     private short period;
 
     @Schema(description = "collaterals.maxAmountResponse.id.description", example = "120")
-    private long id;
+    private String id;
 
     @Schema(description = "collaterals.maxAmount", example = "43716970.00")
     private BigDecimal maxAmount;

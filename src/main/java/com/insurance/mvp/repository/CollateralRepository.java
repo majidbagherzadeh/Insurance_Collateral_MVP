@@ -8,6 +8,8 @@ import java.util.List;
 
 
 @Repository
-public interface CollateralRepository extends JpaRepository<CollateralEntity, Long> {
-    public List<CollateralEntity> findAllByNationalCodeAndCiiNumberAndAssigneeCompanyCode(String nationalCode, String ciiNumber, String assigneeCompanyCode);
+public interface CollateralRepository extends JpaRepository<CollateralEntity, String> {
+    public List<CollateralEntity> findAllByNationalCodeAndCiiNumberAndAssigneeCompanyCode(
+            String nationalCode, String ciiNumber, String assigneeCompanyCode
+    );
 }

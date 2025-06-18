@@ -12,19 +12,19 @@ import java.util.List;
 @Data
 public class CollateralEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
 
-    @Column
+    @Column(nullable = false)
     private String ciiNumber;
 
-    @Column
+    @Column(nullable = false)
     private String nationalCode;
 
-    @Column
+    @Column(nullable = false)
     private short period;
 
-    @Column
+    @Column(nullable = false)
     private BigDecimal maxAmount;
 
     @Column
@@ -33,10 +33,10 @@ public class CollateralEntity {
     @Column
     private LocalDateTime beginDate;
 
-    @Column
+    @Column(nullable = false)
     private LocalDateTime endDate;
 
-    @Column
+    @Column(nullable = false)
     private LocalDateTime creationTime;
 
     @Column
@@ -51,20 +51,20 @@ public class CollateralEntity {
     @Column
     private LocalDateTime cancellationTime;
 
-    @Column
+    @Column(nullable = false)
     private String assigneeCompanyCode;
 
-    @Column
+    @Column(nullable = false)
     private int assigneeId;
 
-    @Column
-    private boolean withdrawReserve;
+    @OneToMany(mappedBy = "collateralEntity", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private List<WithdrawReserveEntity> withdrawReserve;
 
     @OneToMany(mappedBy = "collateralEntity", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<ReleaseCollateralEntity> releaseCollaterals;
 
     public boolean nowActive() {
-        return this.getConfirmationDate() != null && this.getCancellationDate() == null && !this.isWithdrawReserve();
+        return this.getConfirmationDate() != null && this.getCancellationDate() == null;
     }
 
     public boolean canceled() {
@@ -72,10 +72,14 @@ public class CollateralEntity {
     }
 
     public BigDecimal calculateRemainedAmount() {
-        BigDecimal withdrawAmount = BigDecimal.ZERO;
-        for (ReleaseCollateralEntity releaseCollateralEntity : releaseCollaterals)
-            withdrawAmount = withdrawAmount.add(releaseCollateralEntity.getAmount());
+        BigDecimal subAmount = BigDecimal.ZERO;
+        if (releaseCollaterals != null)
+            for (ReleaseCollateralEntity releaseCollateralEntity : releaseCollaterals)
+                subAmount = subAmount.add(releaseCollateralEntity.getAmount());
+        if (withdrawReserve != null)
+            for (WithdrawReserveEntity withdrawReserveEntity : withdrawReserve)
+                subAmount = subAmount.add(withdrawReserveEntity.getAmount());
 
-        return amount.subtract(withdrawAmount);
+        return amount.subtract(subAmount);
     }
 }

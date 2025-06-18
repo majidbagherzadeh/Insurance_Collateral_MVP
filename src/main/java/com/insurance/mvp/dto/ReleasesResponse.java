@@ -6,17 +6,17 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 @Data
-@Schema(description = "پاسخ عملیات آزادسازی وثیقه")
+@Schema(description = "collaterals.releaseResponse.description")
 public class ReleasesResponse {
-    @Schema(description = "کد رایانه", example = "52")
-    private long id;
+    @Schema(description = "collaterals.id", example = "52")
+    private String id;
 
-    @Schema(description = "مبلغ باقیمانده وثیقه", example = "7890000.00")
+    @Schema(description = "collaterals.remainedAmount", example = "7890000.00")
     private BigDecimal remainedAmount;
 
-    @Schema(description = "مبلغ مورد تایید", example = "3005000.00")
+    @Schema(description = "collaterals.amount", example = "3005000.00")
     private BigDecimal amount;
 
-    @Schema(description = "کد رایانه وثیقه", example = "10")
-    private long collateralId;
+    @Schema(description = "collaterals.collateralId", example = "10")
+    private String collateralId;
 }

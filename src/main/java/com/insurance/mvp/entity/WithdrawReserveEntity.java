@@ -6,9 +6,9 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "release_collateral")
+@Table(name = "withdraw_reserve")
 @Data
-public class ReleaseCollateralEntity {
+public class WithdrawReserveEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;

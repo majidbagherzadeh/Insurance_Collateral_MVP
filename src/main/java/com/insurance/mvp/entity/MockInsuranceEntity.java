@@ -7,23 +7,28 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table
+@Table(name = "mock_insurance")
 @Data
-public class MockInsuranceCollateral {
+public class MockInsuranceEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
 
-    @Column
+    @Column(nullable = false)
     private String nationalCode;
-    @Column
+
+    @Column(nullable = false)
     private String ciiNumber;
-    @Column
+
+    @Column(nullable = false)
     private String assigneeCompanyCode;
-    @Column
+
+    @Column(nullable = false)
     private int assigneeId;
-    @Column
+
+    @Column(nullable = false)
     private BigDecimal maxAmount;
-    @Column
+
+    @Column(nullable = false)
     private LocalDateTime endDate;
 }

@@ -43,28 +43,28 @@ public class CollateralController {
     @PostMapping("/{collateralId}/confirmation")
     @Operation(summary = "collaterals.confirmation.summary")
     public ResponseEntity<CollateralResponse> confirmCollateral(
-            @PathVariable int collateralId, @Valid @RequestBody AmountRequest request) {
+            @PathVariable String collateralId, @Valid @RequestBody AmountRequest request) {
         return ResponseEntity.ok(collateralService.confirmCollateral(collateralId, request));
     }
 
     @PostMapping("/{collateralId}/cancellation")
     @Operation(summary = "collaterals.cancellation.summary")
     public ResponseEntity<CollateralResponse> cancelCollateral(
-            @PathVariable int collateralId) {
+            @PathVariable String collateralId) {
         return ResponseEntity.ok(collateralService.cancelCollateral(collateralId));
     }
 
     @PostMapping("/{collateralId}/reserve-withdrawals")
     @Operation(summary = "collaterals.reserve-withdrawals.summary")
     public ResponseEntity<ReserveWithdrawResponse> withdrawReserve(
-            @PathVariable int collateralId, @Valid @RequestBody AmountRequest request) {
+            @PathVariable String collateralId, @Valid @RequestBody AmountRequest request) {
         return ResponseEntity.ok(collateralService.withdrawReserve(collateralId, request));
     }
 
     @PostMapping("/{collateralId}/releases")
     @Operation(summary = "collaterals.releases.summary")
-    public ResponseEntity<ReserveWithdrawResponse> releaseCollateral(
-            @PathVariable int collateralId, @Valid @RequestBody AmountRequest request) {
+    public ResponseEntity<ReleasesResponse> releaseCollateral(
+            @PathVariable String collateralId, @Valid @RequestBody AmountRequest request) {
         return ResponseEntity.ok(collateralService.releaseCollateral(collateralId, request));
     }
 
@@ -72,5 +72,11 @@ public class CollateralController {
     @Operation(summary = "collaterals.inquiry.summary")
     public ResponseEntity<List<PaymentStatusResponse>> getDraftStatus(@RequestParam int draftId) {
         return ResponseEntity.ok(collateralService.getDraftStatus(draftId));
+    }
+
+    @GetMapping("/getCollaterals/")
+    @Operation(summary = "collaterals.getCollaterals.summary")
+    public ResponseEntity<List<CollateralResponse>> getCollaterals(@Valid @RequestBody CollateralsRequest request) {
+        return ResponseEntity.ok(collateralService.getCollaterals(request));
     }
 }
