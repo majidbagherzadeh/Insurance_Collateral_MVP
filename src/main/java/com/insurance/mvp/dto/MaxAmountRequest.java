@@ -6,9 +6,11 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 @Schema(description = "collaterals.maxAmountRequest.description", example = "{\n  \"ciiNumber\": \"80003838503\",\n  \"assigneeCompanyCode\": \"10101541927\",\n  \"nationalCode\": \"0492004986\",\n  \"period\": 18\n}")
 public class MaxAmountRequest {
     @Schema(description = "collaterals.nationalCode", example = "0492004986")

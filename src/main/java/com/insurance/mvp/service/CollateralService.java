@@ -1,6 +1,7 @@
 package com.insurance.mvp.service;
 
 import com.insurance.mvp.dto.*;
+import com.insurance.mvp.entity.CollateralEntity;
 import jakarta.validation.Valid;
 
 import java.util.List;
@@ -14,5 +15,5 @@ public interface CollateralService {
     ReserveWithdrawResponse withdrawReserve(String collateralId, AmountRequest request);
     ReleasesResponse releaseCollateral(String collateralId, AmountRequest request);
     List<PaymentStatusResponse> getDraftStatus(int draftId);
-    List<CollateralResponse> getCollaterals(@Valid CollateralsRequest request);
+    List<FullCollateralResponse> getCollaterals(@Valid CollateralsRequest request);
 }

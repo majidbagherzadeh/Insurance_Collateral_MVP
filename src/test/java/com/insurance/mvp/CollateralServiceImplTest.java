@@ -3,8 +3,11 @@ package com.insurance.mvp;
 import com.insurance.mvp.dto.*;
 import com.insurance.mvp.entity.CollateralEntity;
 import com.insurance.mvp.entity.MockInsuranceEntity;
+import com.insurance.mvp.exceptions.*;
 import com.insurance.mvp.repository.CollateralRepository;
 import com.insurance.mvp.repository.InsuranceCollateralRepository;
+import com.insurance.mvp.repository.ReleaseCollateralRepository;
+import com.insurance.mvp.repository.WithdrawReserveRepository;
 import com.insurance.mvp.service.CollateralServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,6 +36,12 @@ class CollateralServiceImplTest {
 
     @Mock
     private CollateralRepository collateralRepository;
+
+    @Mock
+    private WithdrawReserveRepository withdrawReserveRepository;
+
+    @Mock
+    private ReleaseCollateralRepository releaseCollateralRepository;
 
     @InjectMocks
     private CollateralServiceImpl service;
@@ -113,7 +122,7 @@ class CollateralServiceImplTest {
         MaxAmountRequest req = new MaxAmountRequest("nat", "ci", (short) 6, "code");
         when(insuranceCollateralRepository.findByNationalCodeAndCiiNumberAndAssigneeCompanyCode(any(), any(), any()))
                 .thenReturn(Optional.empty());
-        assertThrows(RuntimeException.class, () -> service.getMaxAmount(req));
+        assertThrows(InsuranceNotFoundException.class, () -> service.getMaxAmount(req));
     }
 
     @Test
@@ -144,21 +153,21 @@ class CollateralServiceImplTest {
     @Test
     void confirmCollateral_notFound_shouldThrow() {
         when(collateralRepository.findById(any())).thenReturn(Optional.empty());
-        assertThrows(RuntimeException.class, () -> service.confirmCollateral("1", new AmountRequest(BigDecimal.TEN)));
+        assertThrows(CollateralNotFoundException.class, () -> service.confirmCollateral("1", new AmountRequest(BigDecimal.TEN)));
     }
 
     @Test
     void confirmCollateral_cancelled_shouldThrow() {
         CollateralEntity entity = canceledCollateralEntity();
         when(collateralRepository.findById(any())).thenReturn(Optional.of(entity));
-        assertThrows(RuntimeException.class, () -> service.confirmCollateral("1", new AmountRequest(BigDecimal.TEN)));
+        assertThrows(CollateralCanceledBeforeException.class, () -> service.confirmCollateral("1", new AmountRequest(BigDecimal.TEN)));
     }
 
     @Test
     void confirmCollateral_confirmed_shouldThrow() {
         CollateralEntity entity = confirmedCollateralEntity();
         when(collateralRepository.findById(any())).thenReturn(Optional.of(entity));
-        assertThrows(RuntimeException.class, () -> service.confirmCollateral("1", new AmountRequest(BigDecimal.TEN)));
+        assertThrows(CollateralConfirmedBeforeException.class, () -> service.confirmCollateral("1", new AmountRequest(BigDecimal.TEN)));
     }
 
     @Test
@@ -174,13 +183,13 @@ class CollateralServiceImplTest {
     @Test
     void withdrawReserve_shouldThrowWhenNotFound() {
         when(collateralRepository.findById(any())).thenReturn(Optional.empty());
-        assertThrows(RuntimeException.class, () -> service.withdrawReserve("1", new AmountRequest(BigDecimal.ONE)));
+        assertThrows(CollateralNotFoundException.class, () -> service.withdrawReserve("1", new AmountRequest(BigDecimal.ONE)));
     }
 
     @Test
     void releaseCollateral_shouldThrowWhenNotFound() {
         when(collateralRepository.findById(any())).thenReturn(Optional.empty());
-        assertThrows(RuntimeException.class, () -> service.releaseCollateral("1", new AmountRequest(BigDecimal.ONE)));
+        assertThrows(CollateralNotFoundException.class, () -> service.releaseCollateral("1", new AmountRequest(BigDecimal.ONE)));
     }
 
     @Test
@@ -188,7 +197,7 @@ class CollateralServiceImplTest {
         CollateralEntity entity = confirmedCollateralEntity();
         entity.setAmount(BigDecimal.valueOf(1000));
         when(collateralRepository.findById(any())).thenReturn(Optional.of(entity));
-        when(collateralRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+        when(withdrawReserveRepository.save(any())).thenAnswer(i -> i.getArgument(0));
 
         ReserveWithdrawResponse response = service.withdrawReserve("1", new AmountRequest(BigDecimal.valueOf(500)));
 
@@ -202,7 +211,7 @@ class CollateralServiceImplTest {
         entity.setAmount(BigDecimal.valueOf(500));
         when(collateralRepository.findById(any())).thenReturn(Optional.of(entity));
 
-        assertThrows(RuntimeException.class,
+        assertThrows(CollateralDeActivatedException.class,
                 () -> service.withdrawReserve("1", new AmountRequest(BigDecimal.valueOf(1000))));
     }
 
@@ -211,7 +220,7 @@ class CollateralServiceImplTest {
         CollateralEntity entity = confirmedCollateralEntity();
         entity.setAmount(BigDecimal.valueOf(1000));
         when(collateralRepository.findById(any())).thenReturn(Optional.of(entity));
-        when(collateralRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+        when(releaseCollateralRepository.save(any())).thenAnswer(i -> i.getArgument(0));
 
         ReleasesResponse response = service.releaseCollateral("1", new AmountRequest(BigDecimal.valueOf(500)));
 
@@ -225,20 +234,20 @@ class CollateralServiceImplTest {
         entity.setAmount(BigDecimal.valueOf(500));
         when(collateralRepository.findById(any())).thenReturn(Optional.of(entity));
 
-        assertThrows(RuntimeException.class,
+        assertThrows(CollateralDeActivatedException.class,
                 () -> service.releaseCollateral("1", new AmountRequest(BigDecimal.valueOf(1000))));
     }
 
     @Test
     void withdrawReserve_invalidCollateral_shouldThrow() {
         when(collateralRepository.findById(any())).thenReturn(Optional.empty());
-        assertThrows(RuntimeException.class, () -> service.withdrawReserve("1", new AmountRequest(BigDecimal.ONE)));
+        assertThrows(CollateralNotFoundException.class, () -> service.withdrawReserve("1", new AmountRequest(BigDecimal.ONE)));
     }
 
     @Test
     void releaseCollateral_invalidCollateral_shouldThrow() {
         when(collateralRepository.findById(any())).thenReturn(Optional.empty());
-        assertThrows(RuntimeException.class, () -> service.releaseCollateral("1", new AmountRequest(BigDecimal.ONE)));
+        assertThrows(CollateralNotFoundException.class, () -> service.releaseCollateral("1", new AmountRequest(BigDecimal.ONE)));
     }
 
     private CollateralEntity createdCollateralEntity() {

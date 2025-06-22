@@ -74,9 +74,12 @@ public class CollateralController {
         return ResponseEntity.ok(collateralService.getDraftStatus(draftId));
     }
 
-    @GetMapping("/getCollaterals/")
+    @GetMapping("/getCollaterals")
     @Operation(summary = "collaterals.getCollaterals.summary")
-    public ResponseEntity<List<CollateralResponse>> getCollaterals(@Valid @RequestBody CollateralsRequest request) {
-        return ResponseEntity.ok(collateralService.getCollaterals(request));
+    public ResponseEntity<List<FullCollateralResponse>> getCollaterals(@RequestParam String ciiNumber
+            , @RequestParam String assigneeCompanyCode, @RequestParam String nationalCode) {
+        return ResponseEntity.ok(collateralService.getCollaterals(
+                new CollateralsRequest(nationalCode, ciiNumber, assigneeCompanyCode))
+        );
     }
 }

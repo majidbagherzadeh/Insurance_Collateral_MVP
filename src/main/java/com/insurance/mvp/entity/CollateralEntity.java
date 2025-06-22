@@ -71,7 +71,9 @@ public class CollateralEntity {
         return this.getCancellationDate() != null;
     }
 
-    public BigDecimal calculateRemainedAmount() {
+    public BigDecimal getRemainedAmount() {
+        if (amount == null) return null;
+
         BigDecimal subAmount = BigDecimal.ZERO;
         if (releaseCollaterals != null)
             for (ReleaseCollateralEntity releaseCollateralEntity : releaseCollaterals)
