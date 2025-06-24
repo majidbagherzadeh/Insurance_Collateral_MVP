@@ -1,15 +1,9 @@
 package com.insurance.mvp.service;
 
 import com.insurance.mvp.dto.*;
-import com.insurance.mvp.entity.MockInsuranceEntity;
-import com.insurance.mvp.entity.CollateralEntity;
-import com.insurance.mvp.entity.ReleaseCollateralEntity;
-import com.insurance.mvp.entity.WithdrawReserveEntity;
+import com.insurance.mvp.entity.*;
 import com.insurance.mvp.exceptions.*;
-import com.insurance.mvp.repository.InsuranceCollateralRepository;
-import com.insurance.mvp.repository.CollateralRepository;
-import com.insurance.mvp.repository.ReleaseCollateralRepository;
-import com.insurance.mvp.repository.WithdrawReserveRepository;
+import com.insurance.mvp.repository.*;
 import com.insurance.mvp.util.DateConverterUtil;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -19,7 +13,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class CollateralServiceImpl implements CollateralService {
@@ -28,15 +21,17 @@ public class CollateralServiceImpl implements CollateralService {
     private final CollateralRepository collateralRepository;
     private final ReleaseCollateralRepository releaseCollateralRepository;
     private final WithdrawReserveRepository withdrawReserveRepository;
+    private final MaxAmountRepository maxAmountRepository;
 
     public CollateralServiceImpl(ModelMapper modelMapper, InsuranceCollateralRepository insuranceCollateralRepository
             , CollateralRepository collateralRepository, ReleaseCollateralRepository releaseCollateralRepository
-            , WithdrawReserveRepository withdrawReserveRepository) {
+            , WithdrawReserveRepository withdrawReserveRepository, MaxAmountRepository maxAmountRepository) {
         this.modelMapper = modelMapper;
         this.insuranceCollateralRepository = insuranceCollateralRepository;
         this.collateralRepository = collateralRepository;
         this.releaseCollateralRepository = releaseCollateralRepository;
         this.withdrawReserveRepository = withdrawReserveRepository;
+        this.maxAmountRepository = maxAmountRepository;
     }
 
     @Override
@@ -53,18 +48,15 @@ public class CollateralServiceImpl implements CollateralService {
         maxAmountResponse.setPeriod(maxAmountRequest.getPeriod());
         maxAmountResponse.setAmount(null);
 
-        List<CollateralEntity> collateralEntities = collateralRepository.findAllByNationalCodeAndCiiNumberAndAssigneeCompanyCode(
+        Optional<MaxAmountEntity> maxAmountEntity = maxAmountRepository.findByNationalCodeAndCiiNumberAndAssigneeCompanyCode(
                 maxAmountRequest.getNationalCode(), maxAmountRequest.getCiiNumber(), maxAmountRequest.getAssigneeCompanyCode()
         );
 
-        if (collateralEntities != null && !collateralEntities.isEmpty()) {
-            for (CollateralEntity collateralEntity : collateralEntities) {
-                collateralEntity.setMaxAmount(maxAmountResponse.getMaxAmount());
-                collateralEntity.setEndDate(insuranceCollateral.getEndDate());
-            }
+        MaxAmountEntity updatemaxAmountEntity = new MaxAmountEntity(insuranceCollateral);
 
-            collateralRepository.saveAll(collateralEntities);
-        }
+        maxAmountEntity.ifPresent(amountEntity -> updatemaxAmountEntity.setId(amountEntity.getId()));
+
+        maxAmountRepository.save(updatemaxAmountEntity);
 
         return maxAmountResponse;
     }

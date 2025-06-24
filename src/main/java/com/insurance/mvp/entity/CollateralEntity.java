@@ -24,17 +24,11 @@ public class CollateralEntity {
     @Column(nullable = false)
     private short period;
 
-    @Column(nullable = false)
-    private BigDecimal maxAmount;
-
     @Column
     private BigDecimal amount;
 
     @Column
     private LocalDateTime beginDate;
-
-    @Column(nullable = false)
-    private LocalDateTime endDate;
 
     @Column(nullable = false)
     private LocalDateTime creationTime;
