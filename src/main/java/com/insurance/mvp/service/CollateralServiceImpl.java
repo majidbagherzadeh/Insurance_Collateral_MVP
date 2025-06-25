@@ -44,19 +44,19 @@ public class CollateralServiceImpl implements CollateralService {
     public MaxAmountResponse getMaxAmount(@Valid MaxAmountRequest maxAmountRequest) {
         MockInsuranceEntity insuranceCollateral = findInsuranceCollateral(maxAmountRequest);
 
-        MaxAmountResponse maxAmountResponse = modelMapper.map(insuranceCollateral, MaxAmountResponse.class);
-        maxAmountResponse.setPeriod(maxAmountRequest.getPeriod());
-        maxAmountResponse.setAmount(null);
-
-        Optional<MaxAmountEntity> maxAmountEntity = maxAmountRepository.findByNationalCodeAndCiiNumberAndAssigneeCompanyCode(
-                maxAmountRequest.getNationalCode(), maxAmountRequest.getCiiNumber(), maxAmountRequest.getAssigneeCompanyCode()
-        );
+        MaxAmountEntity maxAmountEntity = findMaxAmount(maxAmountRequest.getNationalCode(), maxAmountRequest.getCiiNumber()
+                , maxAmountRequest.getAssigneeCompanyCode());
 
         MaxAmountEntity updatemaxAmountEntity = new MaxAmountEntity(insuranceCollateral);
 
-        maxAmountEntity.ifPresent(amountEntity -> updatemaxAmountEntity.setId(amountEntity.getId()));
+        if (maxAmountEntity != null) updatemaxAmountEntity.setId(maxAmountEntity.getId());
 
-        maxAmountRepository.save(updatemaxAmountEntity);
+        updatemaxAmountEntity = maxAmountRepository.save(updatemaxAmountEntity);
+
+        MaxAmountResponse maxAmountResponse = modelMapper.map(insuranceCollateral, MaxAmountResponse.class);
+        maxAmountResponse.setId(updatemaxAmountEntity.getId());
+        maxAmountResponse.setPeriod(maxAmountRequest.getPeriod());
+        maxAmountResponse.setAmount(null);
 
         return maxAmountResponse;
     }
@@ -66,15 +66,22 @@ public class CollateralServiceImpl implements CollateralService {
     public CollateralResponse requestCollateral(MaxAmountRequest maxAmountRequest) {
         MockInsuranceEntity insuranceCollateral = findInsuranceCollateral(maxAmountRequest);
 
+        MaxAmountEntity maxAmountEntity = findMaxAmount(maxAmountRequest.getNationalCode()
+                , maxAmountRequest.getCiiNumber(), maxAmountRequest.getAssigneeCompanyCode());
+
+        if (maxAmountEntity == null) throw new MaxAmountInquiryNotFound();
+
         CollateralEntity collateralEntity = modelMapper.map(insuranceCollateral, CollateralEntity.class);
         collateralEntity.setAmount(null);
         collateralEntity.setCreationTime(DateConverterUtil.toLocalDateTime(new Date()));
         collateralEntity.setPeriod(maxAmountRequest.getPeriod());
-        collateralEntity.setId(0);
 
         collateralEntity = collateralRepository.save(collateralEntity);
 
-        return modelMapper.map(collateralEntity, CollateralResponse.class);
+        CollateralResponse collateralResponse = modelMapper.map(collateralEntity, CollateralResponse.class);
+        collateralResponse.setMaxAmount(maxAmountEntity.getMaxAmount());
+
+        return collateralResponse;
     }
 
     @Override
@@ -86,24 +93,29 @@ public class CollateralServiceImpl implements CollateralService {
         else {
             CollateralEntity collateralEntity = optionalCollateral.get();
 
+            MaxAmountEntity maxAmountEntity = findMaxAmount(collateralEntity.getNationalCode()
+                    , collateralEntity.getCiiNumber(), collateralEntity.getAssigneeCompanyCode());
+
+            if (maxAmountEntity == null) throw new MaxAmountInquiryNotFound();
+
             validNotCanceled(collateralEntity);
             validNotConfirmed(collateralEntity);
             validInsuranceRemainedAmount(collateralEntity, amountRequest);
 
-            collateralEntity.setAmount(amountRequest.getAmount());
-
             LocalDateTime beginDate = DateConverterUtil.toLocalDateTime(new Date());
-            LocalDateTime endDate = beginDate.plusMonths(collateralEntity.getPeriod());
 
+            collateralEntity.setAmount(amountRequest.getAmount());
             collateralEntity.setBeginDate(beginDate);
-            collateralEntity.setEndDate(endDate);
             collateralEntity.setConfirmationDate(beginDate);
             collateralEntity.setConfirmationTime(beginDate);
 
             collateralEntity = collateralRepository.save(collateralEntity);
 
             CollateralResponse collateralResponse = modelMapper.map(collateralEntity, CollateralResponse.class);
-            collateralResponse.setRemainedAmount(calculateInsuranceRemainedAmount(collateralEntity));
+            collateralResponse.setRemainedAmount(calculateInsuranceRemainedAmount(collateralEntity.getNationalCode()
+                    , collateralEntity.getCiiNumber(), collateralEntity.getAssigneeCompanyCode()));
+            collateralResponse.setMaxAmount(maxAmountEntity.getMaxAmount());
+
             return collateralResponse;
         }
     }
@@ -119,11 +131,19 @@ public class CollateralServiceImpl implements CollateralService {
 
             validActive(collateralEntity);
 
+            MaxAmountEntity maxAmountEntity = findMaxAmount(collateralEntity.getNationalCode()
+                    , collateralEntity.getCiiNumber(), collateralEntity.getAssigneeCompanyCode());
+
+            if (maxAmountEntity == null) throw new MaxAmountInquiryNotFound();
+
             collateralEntity.setCancellationDate(DateConverterUtil.toLocalDateTime(new Date()));
             collateralEntity.setCancellationTime(DateConverterUtil.toLocalDateTime(new Date()));
             collateralEntity = collateralRepository.save(collateralEntity);
 
-            return modelMapper.map(collateralEntity, CollateralResponse.class);
+            CollateralResponse collateralResponse = modelMapper.map(collateralEntity, CollateralResponse.class);
+            collateralResponse.setMaxAmount(maxAmountEntity.getMaxAmount());
+
+            return collateralResponse;
         }
     }
 
@@ -200,14 +220,23 @@ public class CollateralServiceImpl implements CollateralService {
 
     @Override
     public List<FullCollateralResponse> getCollaterals(CollateralsRequest request) {
+        Optional<MaxAmountEntity> maxAmountEntity = maxAmountRepository
+                .findByNationalCodeAndCiiNumberAndAssigneeCompanyCode(
+                        request.getNationalCode(), request.getCiiNumber(), request.getAssigneeCompanyCode()
+                );
+
         List<CollateralEntity> collateralEntities = collateralRepository
                 .findAllByNationalCodeAndCiiNumberAndAssigneeCompanyCode(
                         request.getNationalCode(), request.getCiiNumber(), request.getAssigneeCompanyCode()
                 );
-
         ArrayList<FullCollateralResponse> fullCollateralResponses = new ArrayList<>(collateralEntities.size());
+
+        BigDecimal remainedAmount = maxAmountEntity.isPresent() ? calculateInsuranceRemainedAmount(
+                request.getNationalCode(), request.getCiiNumber(), request.getAssigneeCompanyCode()) : null;
+
         collateralEntities.forEach(collateralEntity -> {
             FullCollateralResponse fullCollateralResponse = modelMapper.map(collateralEntity, FullCollateralResponse.class);
+
             if (collateralEntity.getWithdrawReserve() != null) {
                 fullCollateralResponse.setReserveWithdrawResponses(new ArrayList<>(collateralEntity.getWithdrawReserve().size()));
                 for (WithdrawReserveEntity withdrawReserveEntity : collateralEntity.getWithdrawReserve())
@@ -218,19 +247,26 @@ public class CollateralServiceImpl implements CollateralService {
                 for (ReleaseCollateralEntity releaseCollateralEntity : collateralEntity.getReleaseCollaterals())
                     fullCollateralResponse.getReleasesResponses().add(modelMapper.map(releaseCollateralEntity, ReleasesResponse.class));
             }
+            maxAmountEntity.ifPresent(entity -> fullCollateralResponse.setMaxAmount(entity.getMaxAmount()));
+            fullCollateralResponse.setRemainedAmount(remainedAmount);
+
             fullCollateralResponses.add(fullCollateralResponse);
         });
         return fullCollateralResponses;
     }
 
-    private BigDecimal calculateInsuranceRemainedAmount(CollateralEntity collateralEntity) {
-        List<CollateralEntity> collateralEntities = collateralRepository.findAllByNationalCodeAndCiiNumberAndAssigneeCompanyCode(
-                collateralEntity.getNationalCode(), collateralEntity.getCiiNumber(), collateralEntity.getAssigneeCompanyCode()
-        );
+    private BigDecimal calculateInsuranceRemainedAmount(String nationalCode, String ciiNumber, String assigneeCompanyCode) {
+        List<CollateralEntity> collateralEntities = collateralRepository
+                .findAllByNationalCodeAndCiiNumberAndAssigneeCompanyCode(nationalCode, ciiNumber, assigneeCompanyCode);
+
+        Optional<MaxAmountEntity> maxAmountEntity = maxAmountRepository
+                .findByNationalCodeAndCiiNumberAndAssigneeCompanyCode(nationalCode, ciiNumber, assigneeCompanyCode);
+
+        if (maxAmountEntity.isEmpty()) throw new MaxAmountInquiryNotFound();
 
         if (collateralEntities.isEmpty()) return BigDecimal.ZERO;
 
-        BigDecimal remainedAmount = collateralEntities.get(0).getMaxAmount();
+        BigDecimal remainedAmount = maxAmountEntity.get().getMaxAmount();
 
         for (CollateralEntity collateral : collateralEntities) {
             if (collateral.nowActive()) {
@@ -248,8 +284,17 @@ public class CollateralServiceImpl implements CollateralService {
         return remainedAmount;
     }
 
+    private MaxAmountEntity findMaxAmount(String nationalCode, String ciiNumber, String assigneeCompanyCode) {
+        Optional<MaxAmountEntity> maxAmountEntity = maxAmountRepository
+                .findByNationalCodeAndCiiNumberAndAssigneeCompanyCode(nationalCode, ciiNumber, assigneeCompanyCode);
+
+        return maxAmountEntity.orElse(null);
+    }
+
     private void validInsuranceRemainedAmount(CollateralEntity collateralEntity, AmountRequest amountRequest) {
-        BigDecimal insuranceRemainedAmount = calculateInsuranceRemainedAmount(collateralEntity);
+        BigDecimal insuranceRemainedAmount = calculateInsuranceRemainedAmount(collateralEntity.getNationalCode()
+                , collateralEntity.getCiiNumber(), collateralEntity.getAssigneeCompanyCode());
+
         if (insuranceRemainedAmount.compareTo(amountRequest.getAmount()) < 0) throw new CollateralMaxAmountException();
     }
 

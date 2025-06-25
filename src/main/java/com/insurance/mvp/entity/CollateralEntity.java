@@ -31,6 +31,9 @@ public class CollateralEntity {
     private LocalDateTime beginDate;
 
     @Column(nullable = false)
+    private LocalDateTime endDate;
+
+    @Column(nullable = false)
     private LocalDateTime creationTime;
 
     @Column

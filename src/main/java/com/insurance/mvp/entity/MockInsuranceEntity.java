@@ -11,8 +11,8 @@ import java.time.LocalDateTime;
 @Data
 public class MockInsuranceEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(nullable = false)
     private String nationalCode;
