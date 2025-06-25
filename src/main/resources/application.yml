@@ -16,3 +16,10 @@ spring:
   messages:
     basename: message
     encoding: UTF-8
+
+security:
+  auth:
+    tokens:
+      - b1927470-5dc1-4cc4-a566-6fa546f14d5d
+      - fb8dc7c6-2b07-4f39-89fe-c2cb4d00018a
+      - 5309d285-7bec-4eff-8ba3-db3dbffe1238

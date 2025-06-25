@@ -35,11 +35,6 @@ public class CollateralServiceImpl implements CollateralService {
     }
 
     @Override
-    public AuthResponse authenticate(TokenRequest request) {
-        return new AuthResponse(request.getToken());
-    }
-
-    @Override
     @Transactional
     public MaxAmountResponse getMaxAmount(@Valid MaxAmountRequest maxAmountRequest) {
         MockInsuranceEntity insuranceCollateral = findInsuranceCollateral(maxAmountRequest);
@@ -75,6 +70,7 @@ public class CollateralServiceImpl implements CollateralService {
         collateralEntity.setAmount(null);
         collateralEntity.setCreationTime(DateConverterUtil.toLocalDateTime(new Date()));
         collateralEntity.setPeriod(maxAmountRequest.getPeriod());
+        collateralEntity.setEndDate(insuranceCollateral.getEndDate());
 
         collateralEntity = collateralRepository.save(collateralEntity);
 

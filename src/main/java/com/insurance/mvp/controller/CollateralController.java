@@ -20,13 +20,6 @@ public class CollateralController {
         this.collateralService = collateralService;
     }
 
-    @PostMapping("/auth")
-    @Operation(summary = "collaterals.auth.summary", description = "collaterals.auth.description")
-    public ResponseEntity<AuthResponse> authenticate(
-            @Valid @RequestBody TokenRequest request) {
-        return ResponseEntity.ok(new AuthResponse("dummy-token"));
-    }
-
     @PostMapping("/max-amount-inquiry")
     @Operation(summary = "collaterals.max-amount-inquiry.summary")
     public ResponseEntity<MaxAmountResponse> getMaxAmount(

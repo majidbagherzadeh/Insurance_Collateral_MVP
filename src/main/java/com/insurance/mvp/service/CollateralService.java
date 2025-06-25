@@ -7,7 +7,6 @@ import jakarta.validation.Valid;
 import java.util.List;
 
 public interface CollateralService {
-    AuthResponse authenticate(TokenRequest request);
     MaxAmountResponse getMaxAmount(MaxAmountRequest request);
     CollateralResponse requestCollateral(MaxAmountRequest request);
     CollateralResponse confirmCollateral(String collateralId, AmountRequest request);
