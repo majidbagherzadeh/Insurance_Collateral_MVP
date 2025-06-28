@@ -1,0 +1,53 @@
+{
+  "COMMON": {
+    "LOGIN_WITH_TOKEN": "ورود با استفاده از عبارت امنیتی",
+    "TITLE": "تامین کننده سرویس های بیمه"
+  },
+  "FOOTER": {
+    "MESSAGE": "کلیه حقوق برای شرکت نوآوران خدمات پایدار محفوظ است.",
+    "COUNSELING": "مشاوره",
+    "CONTACT": "اطلاعات تماس",
+    "EDUCATION": "آموزش",
+    "DEVELOP_AND_MAINTENANCE": "توسعه و نگهداری",
+    "SUPPORT": "پشتیبانی"
+  },
+  "SIDEBAR": {
+    "APP": "صفحه اصلی",
+    "LOGIN": "ورود به سیستم",
+    "REQUEST": "درخواست وثیقه سپاری",
+    "RELEASE": "آزادسازی وثیقه",
+    "CANCELLATION": "ابطال وثیقه",
+    "CONFIRMATION": "تایید وثیقه سپاری",
+    "DRAFT_INQUIRY": "اعلام وضعیت مالی حواله",
+    "MAX_AMOUNT_INQUIRY": "استعلام حداکثر مبلغ قابل وثیقه سپاری",
+    "REVERSE_WITHDRAWALS": "اعلام برداشت از اندوخته",
+    "SETTINGS": "تنظیمات",
+    "SIGN_OUT": "خروج"
+  },
+  "VIEWS": {
+    "COMMON": {
+      "OK": "تایید",
+      "CANCEL": "انصراف",
+      "COLLATERAL_ID": "شناسه وثیقه",
+      "AMOUNT": "مبلغ",
+      "DRAFT_ID": "شناسه پیش نویس"
+    },
+    "LOGIN": {
+      "TOKEN": "عبارت امنیتی",
+      "ENTER": "ورود"
+    },
+    "REQUEST": {
+      "LABELS": {
+        "CII_NUMBER": "شناسه وثیقه",
+        "ASSIGNEE_COMPANY_CODE": "شناسه شرکت",
+        "NATIONAL_CODE": "شناسه ملی",
+        "PERIOD": "دوره"
+      }
+    },
+    "REVERSE_WITHDRAWALS": {
+      "LABELS": {
+
+      }
+    }
+  }
+}

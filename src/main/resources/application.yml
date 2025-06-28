@@ -17,6 +17,12 @@ spring:
     basename: message
     encoding: UTF-8
 
+
+
+  web:
+    resources:
+      static-locations: 'classpath:/public/browser'
+
 security:
   auth:
     tokens:

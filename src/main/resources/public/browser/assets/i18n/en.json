@@ -1,0 +1,13 @@
+{
+  "SIDEBAR": {
+    "REQUEST": "درخواست وثیقه سپاری",
+    "RELEASE": "آزادسازی وثیقه",
+    "CANCELLATION": "ابطال وثیقه",
+    "CONFIRMATION": "تایید وثیقه سپاری",
+    "DRAFT_INQUIRY": "درخواست وثیقه سپاری",
+    "MAX_AMOUNT_INQUIRY": "استعلام حداکثر مبلغ قابل وثیقه سپاری",
+    "REVERSE_WITHDRAWALS": "اعلام برداشت از اندوخته",
+    "SETTINGS": "تنظیمات",
+    "SIGN_OUT": "خروج"
+  }
+}

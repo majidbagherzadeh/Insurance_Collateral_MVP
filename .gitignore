@@ -1,4 +1,12 @@
-.idea
 .mvn
+.mvn/**
+.idea
+.idea/**
 target
+target/**
+data
+data/**
 .gitattributes
+
+**/node_modules
+**/node_modules/**
